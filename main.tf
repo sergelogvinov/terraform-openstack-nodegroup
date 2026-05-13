@@ -20,6 +20,13 @@ output "instances" {
   value = local.instances
 }
 
+resource "openstack_compute_servergroup_v2" "main" {
+  count    = length(var.placement_group_policies) > 0 ? 1 : 0
+  region   = var.region
+  name     = var.name
+  policies = var.placement_group_policies
+}
+
 resource "openstack_networking_port_v2" "public" {
   for_each       = local.instances
   region         = each.value.region
@@ -69,9 +76,12 @@ resource "openstack_compute_instance_v2" "instances" {
   tags        = var.tags
   image_id    = var.template_id
 
-  #   scheduler_hints {
-  #     group = openstack_compute_servergroup_v2.web[each.value.region].id
-  #   }
+  dynamic "scheduler_hints" {
+    for_each = length(var.placement_group_policies) > 0 ? [1] : []
+    content {
+      group = openstack_compute_servergroup_v2.main[0].id
+    }
+  }
 
   network {
     port = openstack_networking_port_v2.public[each.key].id

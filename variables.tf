@@ -38,10 +38,10 @@ variable "firewall_ids" {
   default     = []
 }
 
-variable "placement_group_id" {
-  description = "ID of the placement group"
-  type        = string
-  default     = ""
+variable "placement_group_policies" {
+  description = "Policies for the placement group"
+  type        = list(string)
+  default     = []
 }
 
 variable "network" {
